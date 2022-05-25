@@ -117,8 +117,8 @@ en:
   NOTICE: Notice
   alert: Alert
   recover: Recovered
-  pause: Stopped
-  stop: Stop
+  pause: Paused
+  stop: Stopped
   System: System
   Custom: Custom
   dingding: dingding
