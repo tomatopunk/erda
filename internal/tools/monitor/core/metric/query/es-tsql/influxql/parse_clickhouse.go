@@ -487,14 +487,17 @@ func (p *Parser) from(sources influxql.Sources) ([]*model.Source, error) {
 	return list, nil
 }
 
-func filterToExpr(filters []*model.Filter, expr *goqu.SelectDataset) (*goqu.SelectDataset, error) {
+func (p *Parser) filterToExpr(filters []*model.Filter, expr *goqu.SelectDataset) (*goqu.SelectDataset, error) {
 	or := goqu.Or()
 	expressionList := goqu.And()
 	for _, item := range filters {
 		key := item.Key
 		keyArr := strings.Split(key, ".")
 		if len(keyArr) > 1 && keyArr[0] == "tags" {
-			key = ckTagKey(keyArr[1])
+			key, _ = p.ckGetKeyName(&influxql.VarRef{
+				Val:  keyArr[1],
+				Type: influxql.Tag,
+			}, influxql.Tag)
 		}
 
 		switch item.Operator {
@@ -559,7 +562,7 @@ func filterToExpr(filters []*model.Filter, expr *goqu.SelectDataset) (*goqu.Sele
 func (p *Parser) filterOnExpr(expr *goqu.SelectDataset) (*goqu.SelectDataset, error) {
 	var err error
 	if len(p.filter) > 0 {
-		expr, err = filterToExpr(p.filter, expr)
+		expr, err = p.filterToExpr(p.filter, expr)
 		if err != nil {
 			return nil, fmt.Errorf("parse filter to expr error: %v", err)
 		}
