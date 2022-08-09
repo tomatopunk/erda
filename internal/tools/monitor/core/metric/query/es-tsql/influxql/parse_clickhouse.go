@@ -694,6 +694,10 @@ func (p *Parser) ckGetKeyName(ref *influxql.VarRef, deftyp influxql.DataType) (s
 }
 
 func (p *Parser) ckGetKeyNameAndFlag(ref *influxql.VarRef, deftyp influxql.DataType) (string, bool, model.ColumnFlag) {
+	if newColumn, ok := originColumn[ref.Val]; ok {
+		return newColumn, false, model.ColumnFlagNone
+	}
+
 	if ref.Type == influxql.Unknown {
 		if ref.Val == model.TimestampKey || ref.Val == model.TimeKey {
 			return model.TimestampKey, false, model.ColumnFlagTimestamp
@@ -711,6 +715,10 @@ func (p *Parser) ckGetKeyNameAndFlag(ref *influxql.VarRef, deftyp influxql.DataT
 }
 
 func (p *Parser) ckColumn(ref *influxql.VarRef) string {
+	if newColumn, ok := originColumn[ref.Val]; ok {
+		return newColumn
+	}
+
 	if ref.Type == influxql.Tag {
 		return ckTag(ref.Val)
 	}
@@ -733,9 +741,6 @@ var originColumn = map[string]string{
 
 // ckField return clickhouse column, and is number
 func (p *Parser) ckField(key string) (string, bool) {
-	if newColumn, ok := originColumn[key]; ok {
-		return fmt.Sprintf("indexOf(string_field_values,'%s')", newColumn), false
-	}
 	return fmt.Sprintf("indexOf(number_field_keys,'%s')", key), true
 }
 
